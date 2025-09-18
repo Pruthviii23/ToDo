@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🎮 Gamified To-Do</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>🎮 Gamified To-Do</h1>
+
+    <!-- Progress -->
+    <div class="progress">
+      <div class="bar" style="width: {{ progress_percent }}%;">
+        {{ xp }}/{{ xp_per_level }}
+      </div>
+    </div>
+    <p>Rank: {{ rank }} | Level {{ level+1 }}</p>
+    <p>🔥 Streak: {{ streak }} day(s)</p>
+
+    <!-- Flash messages -->
+    {% if messages %}
+      <div class="flash-box">
+        {% for m in messages %}
+          <p class="flash">{{ m }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- XP values for this level -->
+    <p>
+      XP per task (this level):
+      Easy = {{ xp_easy }},
+      Medium = {{ xp_medium }},
+      Hard = {{ xp_hard }}
+    </p>
+
+    <!-- Add Task -->
+    <form method="POST" class="add-form">
+      <input type="text" name="task" placeholder="New task..." required>
+      <select name="tier">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+      <select name="kind">
+        <option value="daily">Daily</option>
+        <option value="one_time">One-time</option>
+      </select>
+      <button type="submit">Add</button>
+    </form>
+
+    <!-- Daily Tasks -->
+    <h2>🌞 Daily Tasks</h2>
+    <ul>
+      {% for task in daily_tasks %}
+        <li>
+          <form action="{{ url_for('complete_daily') }}" method="post" class="inline-form">
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+            {% if task.done %}
+              <label class="task-label done">
+                <input type="checkbox" checked disabled>
+                {{ task.text }} ({{ task.tier }})
+              </label>
+            {% else %}
+              <label class="task-label">
+                <input type="checkbox" onchange="this.form.submit()">
+                {{ task.text }} ({{ task.tier }})
+              </label>
+            {% endif %}
+          </form>
+        </li>
+      {% else %}
+        <li class="empty">No daily tasks yet.</li>
+      {% endfor %}
+    </ul>
+
+    <!-- One-time Tasks -->
+    <h2>🎯 One-time Tasks</h2>
+    <ul>
+      {% for task in one_time_tasks %}
+        <li>
+          <form action="{{ url_for('complete_one_time') }}" method="post" class="inline-form">
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+            <label class="task-label">
+              <input type="checkbox" onchange="this.form.submit()">
+              {{ task.text }}
+            </label>
+          </form>
+        </li>
+      {% else %}
+        <li class="empty">No one-time tasks yet.</li>
+      {% endfor %}
+    </ul>
+
+    <p>
+      <a class="reset" href="{{ url_for('reset_all') }}">Reset All Data</a>
+    </p>
+  </div>
+</body>
+</html>
